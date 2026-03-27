@@ -1,0 +1,16 @@
+clusters:
+  - account: acme-platform-dev.Admin
+    region: eu-west-1
+    cluster: platform-dev-1
+  - account: acme-platform-prod.Admin
+    region: eu-west-1
+    cluster: platform-prod-1
+  - account: acme-data-dev.Admin
+    region: eu-west-1
+    cluster: data-dev-1
+  - account: acme-data-prod.Admin
+    region: eu-north-1
+    cluster: data-prod-1
+  - account: acme-api-test.Admin
+    region: eu-west-1
+    cluster: api-test-1
