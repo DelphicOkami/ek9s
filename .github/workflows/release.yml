@@ -23,6 +23,8 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-go@v5
         with:
@@ -31,9 +33,7 @@ jobs:
       - name: Extract changelog for release
         id: changelog
         run: |
-          # Strip leading 'v' from tag to match changelog headings
           VERSION="${GITHUB_REF_NAME#v}"
-          # Extract the section between this version's heading and the next heading (or EOF)
           NOTES=$(awk -v ver="$VERSION" '
             /^## \[/ { if (found) exit; if (index($0, "[" ver "]")) found=1; next }
             found { print }
@@ -44,24 +44,12 @@ jobs:
             NOTES="No changelog entry for this release."
           fi
 
-          # Write to file to avoid delimiter issues
           echo "$NOTES" > release_notes.md
 
-      - name: Build binaries
-        run: |
-          GOOS=linux GOARCH=amd64 go build -o ek9s-linux-amd64 .
-          GOOS=linux GOARCH=arm64 go build -o ek9s-linux-arm64 .
-          GOOS=darwin GOARCH=amd64 go build -o ek9s-darwin-amd64 .
-          GOOS=darwin GOARCH=arm64 go build -o ek9s-darwin-arm64 .
-
-      - name: Create release
-        uses: softprops/action-gh-release@v2
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          body_path: release_notes.md
-          generate_release_notes: true
-          append_body: true
-          files: |
-            ek9s-linux-amd64
-            ek9s-linux-arm64
-            ek9s-darwin-amd64
-            ek9s-darwin-arm64
+          version: "~> v2"
+          args: release --release-notes=release_notes.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
