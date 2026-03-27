@@ -1,5 +1,7 @@
 # ek9s
 
+[![Test](https://github.com/DelphicOkami/ek9s/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/DelphicOkami/ek9s/actions/workflows/test.yml)
+
 **Easy k9s** - a terminal UI for quickly connecting to EKS clusters with [k9s](https://k9scli.io/).
 
 ek9s gives you a fuzzy-searchable list of your EKS clusters and connects you in one step, handling `kubeconfig` setup and `k9s` launch via `aws-vault`.
