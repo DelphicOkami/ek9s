@@ -16,6 +16,8 @@ version bump in automated release recommendation logic.
 
 ### Added
 
+- Documented work around for OSx's binary quarantine
+
 ### Changed
 
 ### Removed

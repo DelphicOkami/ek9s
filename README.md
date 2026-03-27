@@ -15,13 +15,27 @@ ek9s gives you a fuzzy-searchable list of your EKS clusters and connects you in 
 
 ## Install
 
+### From GitHub Releases
+
+Download the latest binary for your platform from the [Releases page](https://github.com/DelphicOkami/ek9s/releases).
+
 ```bash
-go build -o ek9s .
+mv ek9s-<platform>-<arch> /usr/local/bin/ek9s
+chmod +x /usr/local/bin/ek9s
 ```
 
-Move the binary somewhere on your `$PATH`:
+#### macOS: removing the quarantine flag
+
+macOS blocks unsigned binaries downloaded from the internet. After downloading, run:
 
 ```bash
+xattr -d com.apple.quarantine /usr/local/bin/ek9s
+```
+
+### From source
+
+```bash
+go build -o ek9s .
 mv ek9s /usr/local/bin/
 ```
 
