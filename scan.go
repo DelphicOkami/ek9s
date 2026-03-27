@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -313,8 +314,13 @@ func parseAWSProfiles() ([]string, error) {
 	}
 	defer f.Close()
 
+	return parseAWSProfilesFromReader(f)
+}
+
+// parseAWSProfilesFromReader extracts profile names from an AWS config file.
+func parseAWSProfilesFromReader(r io.Reader) ([]string, error) {
 	var profiles []string
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if strings.HasPrefix(line, "[profile ") && strings.HasSuffix(line, "]") {
