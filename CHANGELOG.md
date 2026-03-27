@@ -20,6 +20,8 @@ version bump in automated release recommendation logic.
 
 ### Changed
 
+- Replace manual release with goreleaser
+
 ### Removed
 
 ### Fixed
