@@ -12,6 +12,18 @@ version bump in automated release recommendation logic.
 
 ## [Unreleased]
 
+### Breaking
+
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.1.0]
+
 ### Added
 
 - Interactive cluster selector TUI with fuzzy search powered by Bubble Tea
@@ -31,3 +43,6 @@ version bump in automated release recommendation logic.
 - GitHub Actions workflow to build and release binaries (linux/darwin,
   amd64/arm64) on version tags
 - Test status badge in README
+
+[Unreleased]: https://github.com/DelphicOkami/ek9s/compare/v0.1.0...main
+[0.1.0]: https://github.com/DelphicOkami/ek9s/compare/8a37e7b983d06ea64d1cea2ce7abee0c4a3afb8f...v0.1.0
