@@ -44,12 +44,13 @@ jobs:
             NOTES="No changelog entry for this release."
           fi
 
-          echo "$NOTES" > release_notes.md
+          echo "$NOTES" > "$RUNNER_TEMP/release_notes.md"
+          echo "path=$RUNNER_TEMP/release_notes.md" >> "$GITHUB_OUTPUT"
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           version: "~> v2"
-          args: release --release-notes=release_notes.md
+          args: release --release-notes=${{ steps.changelog.outputs.path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
