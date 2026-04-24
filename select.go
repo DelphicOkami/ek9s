@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/key"
@@ -183,6 +185,10 @@ func runSelect(configPath string) {
 		os.Exit(1)
 	}
 
+	if err := applySkin(*final.readonly); err != nil {
+		fmt.Fprintf(os.Stderr, "Warning: could not apply skin: %v\n", err)
+	}
+
 	// Launch k9s
 	k9sArgs := []string{"exec", account, "--region", region, "--", "k9s"}
 	if *final.readonly {
@@ -200,4 +206,63 @@ func runSelect(configPath string) {
 		fmt.Fprintf(os.Stderr, "Error running k9s: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+// applySkin looks for read_only.skin.yaml / read_write.skin.yaml next to the
+// ek9s binary. If present, it copies the relevant file into the k9s skins
+// directory and sets K9S_SKIN so k9s picks it up. Missing skin files are not
+// an error — the user simply gets k9s's default skin.
+func applySkin(readonly bool) error {
+	srcName := "read_write.skin.yaml"
+	skinName := "ek9s-readwrite"
+	if readonly {
+		srcName = "read_only.skin.yaml"
+		skinName = "ek9s-readonly"
+	}
+
+	exe, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	exe, err = filepath.EvalSymlinks(exe)
+	if err != nil {
+		return err
+	}
+	src := filepath.Join(filepath.Dir(exe), srcName)
+
+	data, err := os.ReadFile(src)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return err
+	}
+
+	skinsDir := k9sSkinsDir()
+	if err := os.MkdirAll(skinsDir, 0o755); err != nil {
+		return err
+	}
+	dest := filepath.Join(skinsDir, skinName+".yaml")
+	if err := os.WriteFile(dest, data, 0o644); err != nil {
+		return err
+	}
+
+	return os.Setenv("K9S_SKIN", skinName)
+}
+
+// k9sSkinsDir returns the directory k9s reads skin files from, matching
+// k9s's own resolution: XDG_CONFIG_HOME if set, otherwise the platform
+// default (~/Library/Application Support on macOS, ~/.config elsewhere).
+func k9sSkinsDir() string {
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "k9s", "skins")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return filepath.Join(".config", "k9s", "skins")
+	}
+	if runtime.GOOS == "darwin" {
+		return filepath.Join(home, "Library", "Application Support", "k9s", "skins")
+	}
+	return filepath.Join(home, ".config", "k9s", "skins")
 }

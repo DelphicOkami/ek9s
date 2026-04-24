@@ -95,6 +95,15 @@ ek9s scan -c "prod"
 ek9s scan -a "dev" -o dev-clusters.yaml
 ```
 
+### Per-mode k9s skins
+
+ek9s can apply a different k9s skin depending on the selected mode. Drop either or both of these files **next to the `ek9s` binary**:
+
+- `read_only.skin.yaml` — applied when launching in readonly mode
+- `read_write.skin.yaml` — applied when launching in read-write mode
+
+At launch, the matching file is copied into your k9s skins directory (`$XDG_CONFIG_HOME/k9s/skins/` if set; otherwise `~/Library/Application Support/k9s/skins/` on macOS, `~/.config/k9s/skins/` elsewhere) as `ek9s-readonly.yaml` or `ek9s-readwrite.yaml`, and ek9s sets `K9S_SKIN` so k9s picks it up. If the file isn't present, k9s uses its default skin. See the [k9s skins docs](https://k9scli.io/topics/skins/) for the file format.
+
 ## Config format
 
 ```yaml

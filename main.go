@@ -33,6 +33,10 @@ Arguments:
 Options:
   -h, --help    Show this help message
 
+Skins:
+  Place read_only.skin.yaml and/or read_write.skin.yaml next to the ek9s
+  binary to apply a k9s skin matching the selected mode.
+
 Prerequisites:
   aws-vault, aws cli, k9s`
 
