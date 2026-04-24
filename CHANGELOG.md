@@ -16,6 +16,7 @@ version bump in automated release recommendation logic.
 
 ### Added
 
+- Support for changing theme based on read / read-write mode selection
 - Documented work around for OSx's binary quarantine
 
 ### Changed
