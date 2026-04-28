@@ -16,16 +16,22 @@ version bump in automated release recommendation logic.
 
 ### Added
 
+### Changed
+
+### Removed
+
+### Fixed
+
+## [0.2.0]
+
+### Added
+
 - Support for changing theme based on read / read-write mode selection
 - Documented work around for OSx's binary quarantine
 
 ### Changed
 
 - Replace manual release with goreleaser
-
-### Removed
-
-### Fixed
 
 ## [0.1.0]
 
@@ -49,5 +55,6 @@ version bump in automated release recommendation logic.
   amd64/arm64) on version tags
 - Test status badge in README
 
-[Unreleased]: https://github.com/DelphicOkami/ek9s/compare/v0.1.0...main
+[Unreleased]: https://github.com/DelphicOkami/ek9s/compare/v0.2.0...main
+[0.2.0]: https://github.com/DelphicOkami/ek9s/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/DelphicOkami/ek9s/compare/8a37e7b983d06ea64d1cea2ce7abee0c4a3afb8f...v0.1.0
