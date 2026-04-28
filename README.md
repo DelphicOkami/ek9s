@@ -116,13 +116,20 @@ At launch, the matching file is copied into your k9s skins directory (`$XDG_CONF
 
 ```yaml
 clusters:
-  - account: "acme-platform-test.AdministratorAccess"
+  - account: "acme-platform-dev.AdministratorAccess"
     region: "us-east-2"
+    cluster: "platform-dev-1"
+  - account: "acme-platform-test.AdministratorAccess"
+    region: "us-east-1"
     cluster: "platform-test-1"
+    friendly_name: "platform test (us-east)" #Optional
+    read_write_skin: "test-1_write.skin.yaml" #Optional specifies the skin to use for this cluster in read/write mode (overrides k9s config)
   - account: "acme-platform-prod.AdministratorAccess"
     region: "us-east-1"
     cluster: "platform-prod-1"
-    friendly_name: "platform prod (us-east)"
+    friendly_name: "platform prod"
+    read_write_skin: "prod-1_write.skin.yaml"
+    read_only_skin: "prod-1_read.skin.yaml" #Optional specifies the skin to use for this cluster in read only mode (overrides k9s config)
 ```
 
 | Field | Description |
