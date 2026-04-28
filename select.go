@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -22,7 +23,7 @@ type clusterItem struct {
 }
 
 func (c clusterItem) FilterValue() string {
-	return c.cluster.Cluster + " " + c.cluster.Region + " " + c.cluster.Account
+	return c.cluster.Cluster + " " + c.cluster.Region + " " + c.cluster.Account + " " + c.cluster.FriendlyName
 }
 
 // clusterDelegate renders each item in the list.
@@ -45,7 +46,7 @@ func (d clusterDelegate) Render(w io.Writer, m list.Model, index int, item list.
 		mode = "readonly"
 	}
 
-	line := fmt.Sprintf("%-40s | %-12s | %s", ci.cluster.Cluster, ci.cluster.Region, mode)
+	line := fmt.Sprintf("%-40s | %-12s | %s", ci.cluster.DisplayName(), ci.cluster.Region, mode)
 
 	if index == m.Index() {
 		fmt.Fprint(w, lipgloss.NewStyle().
@@ -185,7 +186,7 @@ func runSelect(configPath string) {
 		os.Exit(1)
 	}
 
-	if err := applySkin(*final.readonly); err != nil {
+	if err := applySkin(*final.choice, *final.readonly); err != nil {
 		fmt.Fprintf(os.Stderr, "Warning: could not apply skin: %v\n", err)
 	}
 
@@ -208,27 +209,35 @@ func runSelect(configPath string) {
 	}
 }
 
-// applySkin looks for read_only.skin.yaml / read_write.skin.yaml next to the
-// ek9s binary. If present, it copies the relevant file into the k9s skins
-// directory and sets K9S_SKIN so k9s picks it up. Missing skin files are not
-// an error — the user simply gets k9s's default skin.
-func applySkin(readonly bool) error {
-	srcName := "read_write.skin.yaml"
+// applySkin resolves the skin file for the selected cluster + mode and copies
+// it into k9s's skins directory, setting K9S_SKIN so k9s picks it up.
+//
+// Resolution order:
+//  1. Cluster-level override (read_only_skin / read_write_skin), used as-is if
+//     absolute, otherwise resolved relative to ek9s's config directory.
+//  2. Default read_only.skin.yaml / read_write.skin.yaml in the config dir.
+//
+// Missing skin files are not an error — the user simply gets k9s's default
+// skin. The destination is left untouched if it already matches the source,
+// to avoid an unnecessary write on every launch.
+func applySkin(cluster Cluster, readonly bool) error {
+	override := cluster.ReadWriteSkin
+	defaultName := "read_write.skin.yaml"
 	skinName := "ek9s-readwrite"
 	if readonly {
-		srcName = "read_only.skin.yaml"
+		override = cluster.ReadOnlySkin
+		defaultName = "read_only.skin.yaml"
 		skinName = "ek9s-readonly"
 	}
 
-	exe, err := os.Executable()
-	if err != nil {
-		return err
+	src := filepath.Join(ek9sConfigDir(), defaultName)
+	if override != "" {
+		if filepath.IsAbs(override) {
+			src = override
+		} else {
+			src = filepath.Join(ek9sConfigDir(), override)
+		}
 	}
-	exe, err = filepath.EvalSymlinks(exe)
-	if err != nil {
-		return err
-	}
-	src := filepath.Join(filepath.Dir(exe), srcName)
 
 	data, err := os.ReadFile(src)
 	if err != nil {
@@ -239,10 +248,15 @@ func applySkin(readonly bool) error {
 	}
 
 	skinsDir := k9sSkinsDir()
+	dest := filepath.Join(skinsDir, skinName+".yaml")
+
+	if existing, err := os.ReadFile(dest); err == nil && bytes.Equal(existing, data) {
+		return os.Setenv("K9S_SKIN", skinName)
+	}
+
 	if err := os.MkdirAll(skinsDir, 0o755); err != nil {
 		return err
 	}
-	dest := filepath.Join(skinsDir, skinName+".yaml")
 	if err := os.WriteFile(dest, data, 0o644); err != nil {
 		return err
 	}

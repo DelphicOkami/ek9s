@@ -44,9 +44,17 @@ mv ek9s /usr/local/bin/
 ### Select and connect to a cluster
 
 ```bash
-ek9s                    # uses clusters.yaml in current directory
+ek9s                    # uses clusters.yaml from ek9s's config directory
 ek9s /path/to/config.yaml
 ```
+
+The default config directory follows the same pattern as k9s:
+
+- `$XDG_CONFIG_HOME/ek9s/` if `XDG_CONFIG_HOME` is set
+- `~/Library/Application Support/ek9s/` on macOS
+- `~/.config/ek9s/` elsewhere
+
+ek9s reads `clusters.yaml` and (optionally) `read_only.skin.yaml` / `read_write.skin.yaml` from this directory.
 
 This opens an interactive selector powered by [Bubble Tea](https://github.com/charmbracelet/bubbletea):
 
@@ -97,7 +105,7 @@ ek9s scan -a "dev" -o dev-clusters.yaml
 
 ### Per-mode k9s skins
 
-ek9s can apply a different k9s skin depending on the selected mode. Drop either or both of these files **next to the `ek9s` binary**:
+ek9s can apply a different k9s skin depending on the selected mode. Drop either or both of these files into ek9s's config directory (see [Usage](#usage) above for the path):
 
 - `read_only.skin.yaml` — applied when launching in readonly mode
 - `read_write.skin.yaml` — applied when launching in read-write mode
@@ -114,6 +122,7 @@ clusters:
   - account: "acme-platform-prod.AdministratorAccess"
     region: "us-east-1"
     cluster: "platform-prod-1"
+    friendly_name: "platform prod (us-east)"
 ```
 
 | Field | Description |
@@ -121,3 +130,6 @@ clusters:
 | `account` | AWS Vault profile name |
 | `region` | AWS region |
 | `cluster` | EKS cluster name |
+| `friendly_name` | Optional. Shown in the selector instead of `cluster` — useful when the same cluster name exists across multiple accounts. |
+| `read_only_skin` | Optional. Path to a k9s skin file used when launching this cluster in readonly mode. Absolute paths are used as-is; relative paths resolve against ek9s's config directory. Falls back to `read_only.skin.yaml`. |
+| `read_write_skin` | Optional. Same as above for read-write mode. Falls back to `read_write.skin.yaml`. |

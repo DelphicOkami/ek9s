@@ -5,6 +5,7 @@ clusters:
   - account: acme-platform-prod.Admin
     region: eu-west-1
     cluster: platform-prod-1
+    friendly_name: platform prod (eu-west)
   - account: acme-data-dev.Admin
     region: eu-west-1
     cluster: data-dev-1

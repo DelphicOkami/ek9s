@@ -14,9 +14,28 @@ version bump in automated release recommendation logic.
 
 ### Breaking
 
+- Default config path moved from `./clusters.yaml` to `<config-dir>/clusters.yaml`,
+  where `<config-dir>` is `$XDG_CONFIG_HOME/ek9s`, `~/Library/Application Support/ek9s`
+  on macOS, or `~/.config/ek9s` elsewhere. Users relying on the working-directory
+  default need to move the file or pass it explicitly.
+- Skin files (`read_only.skin.yaml` / `read_write.skin.yaml`) are now read from the
+  config directory instead of the directory next to the `ek9s` binary.
+
 ### Added
 
+- `friendly_name` field on cluster config; shown in the selector instead of the
+  EKS cluster name when set, and included in the fuzzy-search filter
+- Per-cluster `read_only_skin` / `read_write_skin` fields to override the default
+  skin files; absolute paths are used as-is, relative paths resolve against
+  ek9s's config directory
+
 ### Changed
+
+- Default config and skin files now resolve from ek9s's config directory; the
+  `scan` command writes to the same location and creates the directory if missing
+- Skin files are no longer rewritten into the k9s skins directory when the
+  destination already matches the source, eliminating a redundant write on every
+  launch
 
 ### Removed
 

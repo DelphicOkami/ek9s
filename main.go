@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
 )
 
 const usage = `ek9s - quickly connect to EKS clusters with k9s
@@ -19,7 +21,8 @@ Commands:
               for EKS clusters, writing the results to a config file.
 
 Scan flags:
-  -o, --output <file>       Output file (default: clusters.yaml)
+  -o, --output <file>       Output file (default: $XDG_CONFIG_HOME/ek9s/clusters.yaml,
+                            or the platform equivalent)
   -a, --account <regex>     Filter profiles by regex (skips non-matching)
   -r, --region <regex>      Filter regions by regex (skips non-matching)
   -c, --cluster <regex>     Filter discovered clusters by regex (drops non-matching)
@@ -28,14 +31,17 @@ Scan flags:
   Filters use partial matching, e.g. "(api|web)" matches "api-dev-1" and "data-web-prod-1"
 
 Arguments:
-  config-file   Path to clusters config (default: clusters.yaml)
+  config-file   Path to clusters config. Defaults to clusters.yaml inside
+                ek9s's config directory ($XDG_CONFIG_HOME/ek9s, or
+                ~/Library/Application Support/ek9s on macOS, or
+                ~/.config/ek9s otherwise).
 
 Options:
   -h, --help    Show this help message
 
 Skins:
-  Place read_only.skin.yaml and/or read_write.skin.yaml next to the ek9s
-  binary to apply a k9s skin matching the selected mode.
+  Place read_only.skin.yaml and/or read_write.skin.yaml in ek9s's config
+  directory to apply a k9s skin matching the selected mode.
 
 Prerequisites:
   aws-vault, aws cli, k9s`
@@ -45,9 +51,20 @@ type Config struct {
 }
 
 type Cluster struct {
-	Account string `yaml:"account"`
-	Region  string `yaml:"region"`
-	Cluster string `yaml:"cluster"`
+	Account       string `yaml:"account"`
+	Region        string `yaml:"region"`
+	Cluster       string `yaml:"cluster"`
+	FriendlyName  string `yaml:"friendly_name,omitempty"`
+	ReadOnlySkin  string `yaml:"read_only_skin,omitempty"`
+	ReadWriteSkin string `yaml:"read_write_skin,omitempty"`
+}
+
+// DisplayName returns FriendlyName if set, otherwise the EKS cluster name.
+func (c Cluster) DisplayName() string {
+	if c.FriendlyName != "" {
+		return c.FriendlyName
+	}
+	return c.Cluster
 }
 
 func main() {
@@ -64,11 +81,32 @@ func main() {
 		return
 	}
 
-	configPath := "clusters.yaml"
+	configPath := defaultConfigPath()
 	if len(os.Args) > 1 {
 		configPath = os.Args[1]
 	}
 	runSelect(configPath)
+}
+
+// ek9sConfigDir returns ek9s's config directory, mirroring k9s's resolution:
+// $XDG_CONFIG_HOME/ek9s if set, otherwise ~/Library/Application Support/ek9s
+// on macOS and ~/.config/ek9s elsewhere.
+func ek9sConfigDir() string {
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
+		return filepath.Join(xdg, "ek9s")
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return filepath.Join(".config", "ek9s")
+	}
+	if runtime.GOOS == "darwin" {
+		return filepath.Join(home, "Library", "Application Support", "ek9s")
+	}
+	return filepath.Join(home, ".config", "ek9s")
+}
+
+func defaultConfigPath() string {
+	return filepath.Join(ek9sConfigDir(), "clusters.yaml")
 }
 
 type scanOptions struct {
@@ -81,7 +119,7 @@ type scanOptions struct {
 
 func parseScanFlags(args []string) scanOptions {
 	opts := scanOptions{
-		outputPath: "clusters.yaml",
+		outputPath: defaultConfigPath(),
 	}
 
 	for i := 0; i < len(args); i++ {

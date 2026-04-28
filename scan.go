@@ -289,6 +289,13 @@ func runScan(opts scanOptions) {
 		os.Exit(1)
 	}
 
+	if dir := filepath.Dir(opts.outputPath); dir != "." && dir != "" {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating %s: %v\n", dir, err)
+			os.Exit(1)
+		}
+	}
+
 	if err := os.WriteFile(opts.outputPath, data, 0644); err != nil {
 		fmt.Fprintf(os.Stderr, "Error writing %s: %v\n", opts.outputPath, err)
 		os.Exit(1)

@@ -76,8 +76,9 @@ func TestEmptyConfigParsesToZeroClusters(t *testing.T) {
 
 func TestParseScanFlagsDefaults(t *testing.T) {
 	opts := parseScanFlags([]string{})
-	if opts.outputPath != "clusters.yaml" {
-		t.Errorf("output = %q, want %q", opts.outputPath, "clusters.yaml")
+	want := defaultConfigPath()
+	if opts.outputPath != want {
+		t.Errorf("output = %q, want %q", opts.outputPath, want)
 	}
 	if opts.accountFilter != nil {
 		t.Error("account filter should be nil by default")
