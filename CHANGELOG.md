@@ -14,6 +14,18 @@ version bump in automated release recommendation logic.
 
 ### Breaking
 
+### Added
+
+### Changed
+
+### Removed
+
+### Fixed
+
+## [1.0.0] - 2026-04-28
+
+### Breaking
+
 - Default config path moved from `./clusters.yaml` to `<config-dir>/clusters.yaml`,
   where `<config-dir>` is `$XDG_CONFIG_HOME/ek9s`, `~/Library/Application Support/ek9s`
   on macOS, or `~/.config/ek9s` elsewhere. Users relying on the working-directory
